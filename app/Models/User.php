@@ -26,7 +26,9 @@ class User extends Authenticatable implements FilamentUser
     protected $fillable = [
         'name',
         'email',
+        // 'phone',
         'password',
+        "custom_fields"
     ];
 
     /**
@@ -49,6 +51,7 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            // 'custom_fields' => 'array'
         ];
     }
 }
