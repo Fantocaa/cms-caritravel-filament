@@ -20,10 +20,17 @@ return new class extends Migration
             $table->string('duration_night')->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
-            $table->mediumText('general_info')->nullable();
-            $table->mediumText('travel_schedule')->nullable();
-            $table->mediumText('additional_info')->nullable();
-            $table->string('title')->nullable();;
+
+            // $table->string('title')->nullable();
+            // $table->mediumText('general_info')->nullable();
+            // $table->mediumText('travel_schedule')->nullable();
+            // $table->mediumText('additional_info')->nullable();
+
+            $table->json('title')->nullable();
+            $table->json('general_info')->nullable();
+            $table->json('travel_schedule')->nullable();
+            $table->json('additional_info')->nullable();
+
             $table->string('price')->nullable();
             $table->bigInteger('author')->nullable();
             $table->mediumText('image_name')->nullable();

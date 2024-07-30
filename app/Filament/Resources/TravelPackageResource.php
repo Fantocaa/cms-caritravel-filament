@@ -24,9 +24,12 @@ use Filament\Forms\Components\RichEditor;
 use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\FileUpload;
+use Filament\Resources\Concerns\Translatable;
 
 class TravelPackageResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = TravelPackage::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -42,23 +45,30 @@ class TravelPackageResource extends Resource
                         ->searchable()
                         ->preload()
                         ->live()
-                        // ->required()
-                        ->options(countries::all()->pluck('name', "iso2")),
+                        // ->dehydrated(false)
+                        ->required()
+                        ->relationship(
+                            name: 'countries',
+                            titleAttribute: 'name',
+                        )
+                    // ->options(countries::all()->pluck('name', "iso2"))
+                    ,
 
                     Select::make('cities')
                         ->label('Kota')
                         ->searchable()
                         ->preload()
                         ->multiple()
-                        ->live()
                         // ->required()
-                        ->options(fn (Get $get): Collection =>
-                        !empty($get('countries')) ?
-                            cities::query()
-                            ->whereIn('country_code', $get('countries'))
-                            ->limit(1000)
-                            ->pluck('name', 'id') :
-                            collect([])),
+                        ->live()
+                    // ->options(fn (Get $get): Collection =>
+                    // !empty($get('countries')) ?
+                    //     cities::query()
+                    //     ->whereIn('country_code', $get('countries'))
+                    //     ->limit(1000)
+                    //     ->pluck('name', 'id') :
+                    //     collect([]))
+                    ,
 
                     Group::make()->schema([
                         TextInput::make('traveler')
@@ -159,7 +169,7 @@ class TravelPackageResource extends Resource
                 TextColumn::make('countries')
                     ->label('Country'),
                 TextColumn::make('cities')
-                    ->label('Cities')
+                    ->label('Cities'),
             ])
             ->filters([
                 //

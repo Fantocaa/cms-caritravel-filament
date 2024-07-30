@@ -9,6 +9,7 @@ use Filament\Navigation\MenuItem;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\SpatieLaravelTranslatablePlugin;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -70,8 +71,11 @@ class AdminPanelProvider extends PanelProvider
                     ->shouldRegisterNavigation(false)
                     ->shouldShowDeleteAccountForm(false)
                     // ->shouldShowSanctumTokens()
-                    ->shouldShowBrowserSessionsForm(false)
+                    ->shouldShowBrowserSessionsForm(false),
                 // ->shouldShowAvatarForm()
+
+                SpatieLaravelTranslatablePlugin::make()
+                    ->defaultLocales(['id', 'en'])
             ])
             ->userMenuItems([
                 'profile' => MenuItem::make()

@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Translatable\HasTranslations;
 
 class TravelPackage extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasTranslations;
 
     protected $casts = [
         'countries' => 'array',
@@ -20,44 +21,12 @@ class TravelPackage extends Model
         'image_name' => 'array',
     ];
 
-    public function getCountryIdsAttribute()
-    {
-        return isset($this->attributes['countries']) ? json_decode($this->attributes['countries'], true) : [];
-    }
-
-    public function setCountryIdsAttribute($value)
-    {
-        $this->attributes['countries'] = json_encode($value);
-    }
-
-    public function getCityIdsAttribute()
-    {
-        return isset($this->attributes['cities']) ? json_decode($this->attributes['cities'], true) : [];
-    }
-
-    public function setCityIdsAttribute($value)
-    {
-        $this->attributes['cities'] = json_encode($value);
-    }
-
-    // Old
-    public function country()
-    {
-        return $this->belongsTo(countries::class, 'countries');
-    }
-
-    public function city()
-    {
-        return $this->belongsTo(cities::class, 'cities');
-    }
-
-    protected static function booted(): void
-    {
-        self::deleted(function (TravelPackage $project) {
-            // Storage::disk('public')->delete($project->image_name);
-            Storage::delete($project->image_name);
-        });
-    }
+    public array $translatable = [
+        'title',
+        'general_info',
+        'travel_schedule',
+        'additional_info'
+    ];
 
     protected $fillable = [
         'countries',
@@ -78,4 +47,45 @@ class TravelPackage extends Model
         'author',
         'price',
     ];
+
+    public function countries()
+    {
+        return $this->hasMany(countries::class, 'countries');
+    }
+
+    public function cities()
+    {
+        return $this->hasMany(cities::class, 'cities');
+    }
+
+    // public function countries()
+    // {
+    //     return $this->belongsToMany(countries::class);
+    // }
+
+    // public function cities()
+    // {
+    //     return $this->belongsToMany(cities::class);
+    // }
+
+    // public function setCountriesAttribute($value)
+    // {
+    //     // Ambil kode ISO-2 negara berdasarkan nama negara
+    //     $iso2 = countries::where('iso2', $value)->value('name');
+    //     $this->attributes['countries'] = $iso2;
+    // }
+
+    // public function setCitiesAttribute($value)
+    // {
+    //     // Ambil ID kota berdasarkan nama kota
+    //     $cityId = cities::where('id', $value)->value('name');
+    //     $this->attributes['cities'] = $cityId;
+    // }
+
+    protected static function booted(): void
+    {
+        self::deleted(function (TravelPackage $project) {
+            Storage::delete($project->image_name);
+        });
+    }
 }
