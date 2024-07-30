@@ -38,6 +38,8 @@ class TravelPackage extends Model
         'start_date',
         'end_date',
         'image_name',
+        'yt_links',
+        'thumb_img',
 
         'date',
         'general_info',
@@ -48,39 +50,32 @@ class TravelPackage extends Model
         'price',
     ];
 
-    public function countries()
+    // Relasi ke model Country
+    public function country()
     {
-        return $this->hasMany(countries::class, 'countries');
+        return $this->belongsTo(countries::class, 'countries', 'iso2');
     }
 
-    public function cities()
+    // Relasi ke model City
+    public function city()
     {
-        return $this->hasMany(cities::class, 'cities');
+        return $this->belongsTo(cities::class, 'cities', 'id');
     }
 
-    // public function countries()
-    // {
-    //     return $this->belongsToMany(countries::class);
-    // }
+    public function getStartDateAttribute($value)
+    {
+        return Carbon::parse($value)->format('d-m-Y');
+    }
 
-    // public function cities()
-    // {
-    //     return $this->belongsToMany(cities::class);
-    // }
+    public function getEndDateAttribute($value)
+    {
+        return Carbon::parse($value)->format('d-m-Y');
+    }
 
-    // public function setCountriesAttribute($value)
-    // {
-    //     // Ambil kode ISO-2 negara berdasarkan nama negara
-    //     $iso2 = countries::where('iso2', $value)->value('name');
-    //     $this->attributes['countries'] = $iso2;
-    // }
-
-    // public function setCitiesAttribute($value)
-    // {
-    //     // Ambil ID kota berdasarkan nama kota
-    //     $cityId = cities::where('id', $value)->value('name');
-    //     $this->attributes['cities'] = $cityId;
-    // }
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'author');
+    }
 
     protected static function booted(): void
     {

@@ -54,4 +54,11 @@ class User extends Authenticatable implements FilamentUser
             // 'custom_fields' => 'array'
         ];
     }
+
+    // Method untuk mendapatkan nomor telepon dari custom_fields
+    public function getPhoneAttribute()
+    {
+        $customFields = json_decode($this->custom_fields, true);
+        return $customFields['phone'] ?? null;
+    }
 }
