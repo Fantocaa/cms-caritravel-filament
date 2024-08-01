@@ -10,12 +10,12 @@ class CreateDocumentVisa extends CreateRecord
 {
     use CreateRecord\Concerns\Translatable;
 
+    protected static string $resource = DocumentVisaResource::class;
+
     protected function getHeaderActions(): array
     {
         return [
             Actions\LocaleSwitcher::make(),
         ];
     }
-
-    protected static string $resource = DocumentVisaResource::class;
 }

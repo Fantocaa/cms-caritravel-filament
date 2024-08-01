@@ -13,11 +13,18 @@ class Document extends Model
 
     protected $fillable = [
         'country',
-        'info'
+        'info',
+        'category'
+    ];
+
+    protected $casts = [
+        'info' => 'array',
+        'category' => 'array',
     ];
 
     public array $translatable = [
         'info',
+        'category'
     ];
 
     public function countries()

@@ -9,8 +9,10 @@ use App\Models\Document;
 use App\Models\DocumentVisa;
 use Filament\Forms;
 use Filament\Forms\Components\Group;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -29,30 +31,41 @@ class DocumentVisaResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    public static function getTranslatableLocales(): array
+    {
+        return ['id', 'en'];
+    }
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Group::make()->schema([
-                    Select::make('country')
-                        ->label('Negara')
-                        ->searchable()
-                        ->preload()
-                        ->required()
-                        ->options(countries::all()->pluck('name', 'id')),
-                    RichEditor::make('info')
-                        ->label('Informasi Umum')
-                        ->toolbarButtons([
-                            // 'attachFiles',
-                            'bold',
-                            'bulletList',
-                            'italic',
-                            // 'link',
-                            'orderedList',
-                            'underline',
-                        ]),
-                ])->columns(1)
-                    ->columnSpanFull()
+                Select::make('country')
+                    ->label('Negara')
+                    ->searchable()
+                    ->preload()
+                    ->required()
+                    ->options(countries::all()->pluck('name', 'id')),
+
+                Repeater::make('categories')
+                    ->schema([
+                        TextInput::make('category')
+                            ->label('Kategori Persyaratan')
+                            ->required(),
+
+                        RichEditor::make('info')
+                            ->label('Informasi Umum')
+                            ->toolbarButtons([
+                                'bold',
+                                'bulletList',
+                                'italic',
+                                'orderedList',
+                                'underline',
+                            ]),
+                    ])
+                    ->columns(2) // Mengatur layout untuk repeater
+                    ->columnSpanFull() // Mengatur agar repeater menggunakan seluruh lebar kolom
+                    ->label('Kategori & Info')
             ]);
     }
 

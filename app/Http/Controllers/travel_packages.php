@@ -15,7 +15,6 @@ class travel_packages extends Controller
      * Display a listing of the resource.
      */
 
-
     public function index()
     {
         // Mengambil data dari TravelPackage dan melakukan inner join dengan tabel users
@@ -38,26 +37,37 @@ class travel_packages extends Controller
             $customFields = json_decode($package->author_phone, true);
             $phone = $customFields['phone'] ?? null;
 
+            // Format harga
+            $package->price = number_format($package->price, 0, ',', '.');
+
             // Tambahkan URL WhatsApp di depan nilai phone
             $package->author_phone = $phone ? 'https://api.whatsapp.com/send?phone=' . $phone : null;
+
+            // Menyembunyikan field yang tidak diinginkan
+            $package->makeHidden(['deleted_at', 'created_at', 'updated_at', 'author', 'status']);
         });
 
         return response()->json($data);
     }
-
-
 
     public function visadata()
     {
         // Mengambil data dari Document dengan join ke tabel Country
         $data = Document::join('countries', 'documents.country', '=', 'countries.id')
             ->where('documents.status', '<>', 0)
-            ->select('documents.*', 'countries.iso2')
+            ->select('documents.*', 'countries.iso2', 'countries.name')
             ->get();
 
-        // Mengubah iso2 menjadi lowercase setelah data diambil
+        // Mengubah iso2 menjadi lowercase dan mengganti countries dengan nama negara serta menambahkan URL flag
         $data->each(function ($item) {
+            // Mengubah iso2 menjadi lowercase
             $item->iso2 = strtolower($item->iso2);
+
+            // Menambahkan URL flag
+            $item->flag = "https://flagcdn.com/w80/{$item->iso2}.png";
+
+            // Menyembunyikan field yang tidak diinginkan
+            $item->makeHidden(['deleted_at', 'created_at', 'updated_at', 'status', 'country']);
         });
 
         return response()->json($data);
