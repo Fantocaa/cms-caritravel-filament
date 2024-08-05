@@ -17,7 +17,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\DatePicker;
 use App\Filament\Resources\TravelPackageResource\Pages;
-use Filament\Forms\Components\Textarea;
 use App\Models\User;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\RichEditor;
@@ -26,6 +25,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Resources\Concerns\Translatable;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\ToggleColumn;
 
 class TravelPackageResource extends Resource
@@ -34,7 +34,10 @@ class TravelPackageResource extends Resource
 
     protected static ?string $model = TravelPackage::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-globe-asia-australia';
+    protected static ?string $navigationLabel = 'Travel Packages';
+    protected static ?string $modelLabel = 'Travel Packages';
+    protected static ?string $navigationGroup = 'Content Management';
 
     public static function form(Form $form): Form
     {
@@ -68,39 +71,34 @@ class TravelPackageResource extends Resource
                         TextInput::make('traveler')
                             ->label('Traveler')
                             ->numeric()
-                        // ->required()
-                        ,
+                            ->required(),
 
                         TextInput::make('duration')
                             ->label('Duration (Days)')
                             ->numeric()
-                        // ->required()
-                        ,
+                            ->required(),
 
                         TextInput::make('duration_night')
                             ->label('Duration (Nights)')
                             ->numeric()
-                        // ->required()
-                        ,
+                            ->required(),
                     ])->columns(3),
 
                     Group::make()->schema([
                         DatePicker::make('start_date')
                             ->label('Start Date')
-                        // ->required()
-                        ,
+                            ->required(),
 
                         DatePicker::make('end_date')
                             ->label('End Date')
-                        // ->required(),
+                            ->required(),
                     ])->columns(2),
 
                     TextInput::make('price')
                         ->label('Harga')
                         ->prefix('Rp.')
                         ->numeric()
-                    // ->required()
-                    ,
+                        ->required(),
 
                     Select::make('author')
                         ->label('Author')
@@ -108,29 +106,32 @@ class TravelPackageResource extends Resource
                         ->preload()
                         ->live()
                         ->reactive()
-                    // ->required()
-                    ,
-
-                    TextInput::make('yt_links')
-                        ->label('(Opsional) Video Link (Youtube)')
-                        ->prefix('www.')
-                        ->live()
-                        ->reactive(),
-
-                    FileUpload::make('thumb_img')
-                        ->maxFiles(1)
-                        ->label('Thumbnail Video (JPG, JPEG, PNG)')
-                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg'])
-                        ->previewable()
-                        ->live()
-                        ->reactive(),
+                        ->required(),
 
                     FileUpload::make('image_name')
                         ->multiple()
                         ->maxFiles(8)
                         ->label('Upload File JPG, JPEG, PNG, (Maksimal 8 Item)')
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg'])
-                        ->previewable()
+                        ->required()
+                        ->previewable(),
+
+                    Section::make()
+                        ->schema([
+                            TextInput::make('yt_links')
+                                ->label('(Opsional) Video Link (Youtube)')
+                                ->prefix('www.')
+                                ->live()
+                                ->reactive(),
+
+                            FileUpload::make('thumb_img')
+                                ->maxFiles(1)
+                                ->label('Thumbnail Video (JPG, JPEG, PNG)')
+                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg'])
+                                ->previewable()
+                                ->live()
+                                ->reactive(),
+                        ]),
                 ])->columns(1),
 
 
@@ -138,10 +139,12 @@ class TravelPackageResource extends Resource
                     Section::make()
                         ->schema([
                             TextInput::make('title')
-                                ->label('Title'),
+                                ->label('Title')
+                                ->required(),
 
                             RichEditor::make('general_info')
                                 ->label('Informasi Umum')
+                                ->required()
                                 ->toolbarButtons([
                                     'attachFiles',
                                     'bold',
@@ -154,6 +157,7 @@ class TravelPackageResource extends Resource
 
                             RichEditor::make('travel_schedule')
                                 ->label('Informasi Paket')
+                                ->required()
                                 ->toolbarButtons([
                                     'attachFiles',
                                     'bold',
@@ -175,6 +179,7 @@ class TravelPackageResource extends Resource
                                     'orderedList',
                                     'underline',
                                 ]),
+
                         ])->columns(1),
                 ])
             ]);
@@ -212,8 +217,10 @@ class TravelPackageResource extends Resource
 
                         return $countryNames;
                     }),
-                TextColumn::make('title')
-                    ->label('Judul'),
+                // TextColumn::make('title')
+                //     ->label('Judul'),
+                ImageColumn::make('image_name')
+                    ->label('Foto Produk'),
                 ToggleColumn::make('status')
 
             ])

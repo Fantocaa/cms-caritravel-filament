@@ -3,13 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DocumentVisaResource\Pages;
-use App\Filament\Resources\DocumentVisaResource\RelationManagers;
 use App\Models\countries;
 use App\Models\Document;
 use App\Models\DocumentVisa;
-use Filament\Forms;
+use Awcodes\TableRepeater\Components\TableRepeater;
+use Awcodes\TableRepeater\Header;
 use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -17,8 +16,6 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -29,43 +26,46 @@ class DocumentVisaResource extends Resource
 
     protected static ?string $model = Document::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
-    public static function getTranslatableLocales(): array
-    {
-        return ['id', 'en'];
-    }
+    protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationLabel = 'Document Visa';
+    protected static ?string $modelLabel = 'Document Visa';
+    protected static ?string $navigationGroup = 'Content Management';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Select::make('country')
-                    ->label('Negara')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->options(countries::all()->pluck('name', 'id')),
+                Group::make()->schema([
+                    TextInput::make('category')
+                        ->label("Kategori Persyaratan"),
+                    TableRepeater::make('country')
+                        ->label('Country')
+                        ->headers([
+                            Header::make('country')->width('150px')
+                                ->label('Silahkan Pilih Negara'),
+                        ])
+                        ->schema([
+                            Select::make('country')
+                                ->label('Negara')
+                                ->searchable()
+                                ->preload()
+                                ->required()
+                                ->options(countries::all()->pluck('name', 'id')),
+                        ])
+                        ->columnSpan('1'),
+                ])->columnSpan('1'),
 
-                Repeater::make('categories')
-                    ->schema([
-                        TextInput::make('category')
-                            ->label('Kategori Persyaratan')
-                            ->required(),
-
-                        RichEditor::make('info')
-                            ->label('Informasi Umum')
-                            ->toolbarButtons([
-                                'bold',
-                                'bulletList',
-                                'italic',
-                                'orderedList',
-                                'underline',
-                            ]),
-                    ])
-                    ->columns(2) // Mengatur layout untuk repeater
-                    ->columnSpanFull() // Mengatur agar repeater menggunakan seluruh lebar kolom
-                    ->label('Kategori & Info')
+                RichEditor::make('info')
+                    ->label('Informasi Kategori')
+                    ->toolbarButtons([
+                        'attachFiles',
+                        'bold',
+                        'bulletList',
+                        'italic',
+                        'link',
+                        'orderedList',
+                        'underline',
+                    ]),
             ]);
     }
 
@@ -73,30 +73,14 @@ class DocumentVisaResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('country')
-                    ->label('Negara')
-                    ->formatStateUsing(function ($state) {
-                        // Pisahkan kode id menjadi array
-                        $idCodes = explode(', ', $state);
+                TextColumn::make('category'),
+                // TextColumn::make('country')
+                //     ->searchable()
+                //     ->sortable()
+                //     ->color('secondary')
+                //     ->alignLeft(),
+                ToggleColumn::make('status'),
 
-                        // Dapatkan nama negara berdasarkan kode id
-                        $countries = countries::whereIn('id', $idCodes)->pluck('name', 'id');
-
-                        // Gabungkan nama negara menjadi string dengan pemisah koma
-                        $countryNames = $countries->values()->implode(', ');
-
-                        return $countryNames;
-                    }),
-                // TextColumn::make('info')
-                //     ->label('Content')
-                //     ->formatStateUsing(function ($state) {
-                //         // Jika data adalah string HTML langsung, tidak perlu json_decode
-                //         $clean_text = strip_tags($state);
-
-                //         // Kembalikan teks bersih
-                //         return $clean_text;
-                //     }),
-                ToggleColumn::make('status')
             ])
             ->filters([
                 //

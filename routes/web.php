@@ -11,3 +11,7 @@ Route::get('/', function () {
 Route::get('/traveldata', [travel_packages::class, "index"]);
 
 Route::get('/visadata', [travel_packages::class, "visadata"]);
+
+Route::get('/product_location', [travel_packages::class, "product_location"]);
+
+Route::get('/visa_country', [travel_packages::class, "visa_country"]);

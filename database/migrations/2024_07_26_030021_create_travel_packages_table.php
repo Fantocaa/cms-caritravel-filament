@@ -26,7 +26,7 @@ return new class extends Migration
             // $table->mediumText('travel_schedule')->nullable();
             // $table->mediumText('additional_info')->nullable();
 
-            $table->json('title')->nullable();
+            $table->string('title')->nullable();
             $table->json('general_info')->nullable();
             $table->json('travel_schedule')->nullable();
             $table->json('additional_info')->nullable();

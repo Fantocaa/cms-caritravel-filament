@@ -22,7 +22,7 @@ class TravelPackage extends Model
     ];
 
     public array $translatable = [
-        'title',
+        // 'title',
         'general_info',
         'travel_schedule',
         'additional_info'

@@ -20,4 +20,24 @@ class EditDocumentVisa extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    // public function updatedActiveLocale(): void
+    // {
+    //     if (blank($this->oldActiveLocale)) {
+    //         return;
+    //     }
+
+    //     $this->resetValidation();
+
+    //     $translatableAttributes = static::getResource()::getTranslatableAttributes();
+
+    //     // Fix part - Start
+    //     $this->form->fill([
+    //         ...Arr::except($this->data, $translatableAttributes),
+    //         ...$this->otherLocaleData[$this->activeLocale] ?? [],
+    //     ]);
+    //     // // Fix part - End
+
+    //     unset($this->otherLocaleData[$this->activeLocale]);
+    // }
 }

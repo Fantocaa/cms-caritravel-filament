@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\cities;
 use App\Models\countries;
 use App\Models\Document;
+use App\Models\LocationProduct;
 use App\Models\TravelPackage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -43,6 +44,14 @@ class travel_packages extends Controller
             // Tambahkan URL WhatsApp di depan nilai phone
             $package->author_phone = $phone ? 'https://api.whatsapp.com/send?phone=' . $phone : null;
 
+            //  Mengubah thumb_img menjadi URL lengkap
+            $package->thumb_img = $package->thumb_img ? asset('storage/' . $package->thumb_img) : null;
+
+            // Mengubah setiap image_name menjadi URL lengkap
+            $package->image_name = collect($package->image_name)->map(function ($image) {
+                return asset('storage/' . $image);
+            })->toArray();
+
             // Menyembunyikan field yang tidak diinginkan
             $package->makeHidden(['deleted_at', 'created_at', 'updated_at', 'author', 'status']);
         });
@@ -52,25 +61,56 @@ class travel_packages extends Controller
 
     public function visadata()
     {
-        // Mengambil data dari Document dengan join ke tabel Country
-        $data = Document::join('countries', 'documents.country', '=', 'countries.id')
-            ->where('documents.status', '<>', 0)
-            ->select('documents.*', 'countries.iso2', 'countries.name')
-            ->get();
+        $data = Document::where('status', '<>', 0)->get();
 
-        // Mengubah iso2 menjadi lowercase dan mengganti countries dengan nama negara serta menambahkan URL flag
         $data->each(function ($item) {
-            // Mengubah iso2 menjadi lowercase
-            $item->iso2 = strtolower($item->iso2);
+            // Ambil data negara berdasarkan id negara yang ada di item data
+            $countries = countries::whereIn('id', array_column($item->country, 'country'))
+                ->get(['iso2', 'name']);
 
-            // Menambahkan URL flag
-            $item->flag = "https://flagcdn.com/w80/{$item->iso2}.png";
+            // Tambahkan iso2 dan name ke dalam item data
+            $item->iso2 = $countries->pluck('iso2')->map(fn ($iso2) => strtolower($iso2))->toArray();
+            $item->country_names = $countries->pluck('name')->toArray();
 
-            // Menyembunyikan field yang tidak diinginkan
-            $item->makeHidden(['deleted_at', 'created_at', 'updated_at', 'status', 'country']);
+            // Sembunyikan field yang tidak diinginkan
+            $item->makeHidden(['country', 'status', 'deleted_at', 'created_at', 'updated_at']);
         });
 
         return response()->json($data);
+    }
+
+    public function product_location()
+    {
+        $data = LocationProduct::where('status', '<>', 0)->get();
+
+        $data->each(function ($item) {
+            // Ambil data negara berdasarkan id negara yang ada di item data
+            $item->countries = countries::where('iso2', $item->countries)->value('name');
+            $item->cities = cities::where('id', $item->cities)->value('name');
+
+            // Sembunyikan field yang tidak diinginkan
+            $item->makeHidden(['deleted_at', 'created_at', 'updated_at', 'status']);
+        });
+
+        return response()->json($data);
+    }
+
+    public function visa_country()
+    {
+        // Ambil semua dokumen
+        $documents = Document::all();
+
+        // Ambil negara dari setiap dokumen dan hapus duplikat
+        // $countryIds = $documents->flatMap(function ($document) {
+        //     return $document->country;
+        // })->pluck('country')->unique();
+
+        // // Format menjadi array of objects seperti [{1}, {2}, {102}]
+        // $formattedCountries = $countryIds->map(function ($id) {
+        //     return ['country' => $id];
+        // });
+
+        return response()->json($documents);
     }
 
     /**

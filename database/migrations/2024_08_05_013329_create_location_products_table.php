@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('documents', function (Blueprint $table) {
-            $table->string('category')->nullable()->after("info");
+        Schema::create('location_products', function (Blueprint $table) {
+            $table->id();
+            $table->string('countries')->nullable();
+            $table->string('cities')->nullable();
+            $table->softDeletes();
+            $table->timestamps();
         });
     }
 
@@ -21,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('documents', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('location_products');
     }
 };

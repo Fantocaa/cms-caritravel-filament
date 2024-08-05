@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Http;
 
 class Document extends Model
 {
@@ -18,11 +20,10 @@ class Document extends Model
     ];
 
     protected $casts = [
-        'info' => 'array',
-        'category' => 'array',
+        'country' => 'array',
     ];
 
-    public array $translatable = [
+    public $translatable = [
         'info',
         'category'
     ];

@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->string('country')->nullable();
-            $table->mediumText('info')->nullable();
+            $table->json('country')->nullable();
+            $table->json('info')->nullable();
+            $table->json('category')->nullable();
             $table->string('status')->nullable();
             $table->softDeletes();
             $table->timestamps();
@@ -26,6 +27,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('document_categories');
         Schema::dropIfExists('documents');
     }
 };
