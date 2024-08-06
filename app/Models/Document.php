@@ -16,7 +16,8 @@ class Document extends Model
     protected $fillable = [
         'country',
         'info',
-        'category'
+        'category',
+        'author'
     ];
 
     protected $casts = [
@@ -31,5 +32,10 @@ class Document extends Model
     public function countries()
     {
         return $this->belongsTo(countries::class, 'id');
+    }
+
+    public function author()
+    {
+        return $this->belongsTo(User::class, 'author');
     }
 }

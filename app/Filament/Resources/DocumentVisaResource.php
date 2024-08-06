@@ -6,6 +6,7 @@ use App\Filament\Resources\DocumentVisaResource\Pages;
 use App\Models\countries;
 use App\Models\Document;
 use App\Models\DocumentVisa;
+use App\Models\User;
 use Awcodes\TableRepeater\Components\TableRepeater;
 use Awcodes\TableRepeater\Header;
 use Filament\Forms\Components\Group;
@@ -27,8 +28,8 @@ class DocumentVisaResource extends Resource
     protected static ?string $model = Document::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-    protected static ?string $navigationLabel = 'Document Visa';
-    protected static ?string $modelLabel = 'Document Visa';
+    protected static ?string $navigationLabel = 'Visa Document';
+    protected static ?string $modelLabel = 'Visa Document';
     protected static ?string $navigationGroup = 'Content Management';
 
     public static function form(Form $form): Form
@@ -38,6 +39,13 @@ class DocumentVisaResource extends Resource
                 Group::make()->schema([
                     TextInput::make('category')
                         ->label("Kategori Persyaratan"),
+                    Select::make('author')
+                        ->label('Author')
+                        ->options(User::all()->pluck('name', 'id'))
+                        ->preload()
+                        ->live()
+                        ->reactive()
+                        ->required(),
                     TableRepeater::make('country')
                         ->label('Country')
                         ->headers([

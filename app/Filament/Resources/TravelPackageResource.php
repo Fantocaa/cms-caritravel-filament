@@ -111,6 +111,7 @@ class TravelPackageResource extends Resource
                     FileUpload::make('image_name')
                         ->multiple()
                         ->maxFiles(8)
+                        ->minFiles(5)
                         ->label('Upload File JPG, JPEG, PNG, (Maksimal 8 Item)')
                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg'])
                         ->required()

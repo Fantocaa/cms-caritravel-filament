@@ -34,12 +34,13 @@ class travel_packages extends Controller
                 return cities::where('id', $id)->value('name');
             })->toArray();
 
-            // Dekode JSON dan ambil nilai phone
-            $customFields = json_decode($package->author_phone, true);
-            $phone = $customFields['phone'] ?? null;
-
             // Format harga
             $package->price = number_format($package->price, 0, ',', '.');
+
+            // Dekode JSON dan ambil nilai phone
+            $customFields = json_decode($package->author_phone, true);
+
+            $phone = $customFields['phone'] ?? null;
 
             // Tambahkan URL WhatsApp di depan nilai phone
             $package->author_phone = $phone ? 'https://api.whatsapp.com/send?phone=' . $phone : null;
@@ -61,7 +62,9 @@ class travel_packages extends Controller
 
     public function visadata()
     {
-        $data = Document::where('status', '<>', 0)->get();
+        $data = Document::where('status', '<>', 0)
+            ->join('users', 'documents.author', '=', 'users.id')
+            ->get();
 
         $data->each(function ($item) {
             // Ambil data negara berdasarkan id negara yang ada di item data
@@ -72,12 +75,21 @@ class travel_packages extends Controller
             $item->iso2 = $countries->pluck('iso2')->map(fn ($iso2) => strtolower($iso2))->toArray();
             $item->country_names = $countries->pluck('name')->toArray();
 
+            // Dekode JSON dan ambil nilai phone dari custom_fields
+            $customFields = json_decode($item->custom_fields, true);
+
+            $phone = $customFields['phone'] ?? null;
+
+            // Tambahkan URL WhatsApp di depan nilai phone
+            $item->author_phone = $phone ? 'https://api.whatsapp.com/send?phone=' . $phone : null;
+
             // Sembunyikan field yang tidak diinginkan
-            $item->makeHidden(['country', 'status', 'deleted_at', 'created_at', 'updated_at']);
+            $item->makeHidden(['country', 'status', 'deleted_at', 'created_at', 'updated_at', 'custom_fields']);
         });
 
         return response()->json($data);
     }
+
 
     public function product_location()
     {
@@ -99,16 +111,6 @@ class travel_packages extends Controller
     {
         // Ambil semua dokumen
         $documents = Document::all();
-
-        // Ambil negara dari setiap dokumen dan hapus duplikat
-        // $countryIds = $documents->flatMap(function ($document) {
-        //     return $document->country;
-        // })->pluck('country')->unique();
-
-        // // Format menjadi array of objects seperti [{1}, {2}, {102}]
-        // $formattedCountries = $countryIds->map(function ($id) {
-        //     return ['country' => $id];
-        // });
 
         return response()->json($documents);
     }
