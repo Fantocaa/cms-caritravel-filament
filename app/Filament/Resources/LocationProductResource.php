@@ -21,6 +21,10 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
 
 class LocationProductResource extends Resource
 {
@@ -49,7 +53,7 @@ class LocationProductResource extends Resource
                     ->preload()
                     ->required()
                     ->live()
-                    ->options(fn (Get $get): Collection =>
+                    ->options(fn(Get $get): Collection =>
                     !empty($get('countries')) ?
                         cities::query()
                         ->where(function ($query) use ($get) {
@@ -67,8 +71,9 @@ class LocationProductResource extends Resource
                 FileUpload::make('img_name')
                     ->maxFiles(1)
                     ->label('Thumbnail Foto Lokasi (JPG, JPEG, PNG)')
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg'])
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/webp'])
                     ->previewable()
+                    ->maxSize(1024)
                     ->required(),
             ]);
     }
@@ -79,6 +84,8 @@ class LocationProductResource extends Resource
             ->columns([
                 TextColumn::make('countries')
                     ->label('Negara')
+                    ->searchable()
+                    ->sortable()
                     ->formatStateUsing(function ($state) {
                         // Pisahkan kode iso2 menjadi array
                         $iso2Codes = explode(', ', $state);
@@ -93,6 +100,8 @@ class LocationProductResource extends Resource
                     }),
                 TextColumn::make('cities')
                     ->label('Kota')
+                    ->searchable()
+                    ->sortable()
                     ->formatStateUsing(function ($state) {
                         // Pisahkan kode iso2 menjadi array
                         $idCodes = explode(', ', $state);
@@ -105,14 +114,20 @@ class LocationProductResource extends Resource
 
                         return $countryNames;
                     }),
-                ImageColumn::make('img_name'),
+                ImageColumn::make('img_name')
+                    ->label('Foto Produk'),
                 ToggleColumn::make('status')
             ])
             ->filters([
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

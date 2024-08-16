@@ -79,8 +79,20 @@ class TravelPackage extends Model
 
     protected static function booted(): void
     {
-        self::deleted(function (TravelPackage $project) {
-            Storage::delete($project->image_name);
+        self::deleted(function (TravelPackage $travelPackage) {
+            // Hapus semua file yang terkait dengan 'image_name'
+            if ($travelPackage->image_name) {
+                foreach ($travelPackage->image_name as $image) {
+                    if (Storage::disk('public')->exists($image)) {
+                        Storage::disk('public')->delete($image);
+                    }
+                }
+            }
+
+            // Hapus file thumbnail video jika ada
+            if ($travelPackage->thumb_img && Storage::exists($travelPackage->thumb_img)) {
+                Storage::disk('public')->delete($travelPackage->thumb_img);
+            }
         });
     }
 }

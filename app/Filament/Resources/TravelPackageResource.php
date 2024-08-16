@@ -27,6 +27,11 @@ use Filament\Forms\Components\ToggleButtons;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Illuminate\Support\Str;
+use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\EditAction;
 
 class TravelPackageResource extends Resource
 {
@@ -44,40 +49,39 @@ class TravelPackageResource extends Resource
         return $form
             ->schema([
                 Group::make()->schema([
-                    Select::make('countries')
-                        ->label('Negara')
-                        ->multiple()
-                        ->searchable()
-                        ->preload()
-                        ->live()
-                        ->required()
-                        ->options(countries::all()->pluck('name', "iso2")),
-                    Select::make('cities')
-                        ->label('Kota')
-                        ->searchable()
-                        ->preload()
-                        ->multiple()
-                        ->required()
-                        ->live()
-                        ->options(fn (Get $get): Collection =>
-                        !empty($get('countries')) ?
-                            cities::query()
-                            ->whereIn('country_code', $get('countries'))
-                            ->limit(1000)
-                            ->pluck('name', 'id') :
-                            collect([])),
+                    Group::Make()->schema([
+                        Select::make('countries')
+                            ->label('Negara')
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->live()
+                            ->required()
+                            ->options(countries::all()->pluck('name', "iso2")),
+                        Select::make('cities')
+                            ->label('Kota')
+                            ->searchable()
+                            ->preload()
+                            ->multiple()
+                            ->required()
+                            ->live()
+                            ->options(fn(Get $get): Collection =>
+                            !empty($get('countries')) ?
+                                cities::query()
+                                ->whereIn('country_code', $get('countries'))
+                                ->pluck('name', 'id') :
+                                collect([])),
+                    ])->columns(2),
 
                     Group::make()->schema([
                         TextInput::make('traveler')
                             ->label('Traveler')
                             ->numeric()
                             ->required(),
-
                         TextInput::make('duration')
                             ->label('Duration (Days)')
                             ->numeric()
                             ->required(),
-
                         TextInput::make('duration_night')
                             ->label('Duration (Nights)')
                             ->numeric()
@@ -88,32 +92,33 @@ class TravelPackageResource extends Resource
                         DatePicker::make('start_date')
                             ->label('Start Date')
                             ->required(),
-
                         DatePicker::make('end_date')
                             ->label('End Date')
                             ->required(),
                     ])->columns(2),
 
-                    TextInput::make('price')
-                        ->label('Harga')
-                        ->prefix('Rp.')
-                        ->numeric()
-                        ->required(),
-
-                    Select::make('author')
-                        ->label('Author')
-                        ->options(User::all()->pluck('name', 'id'))
-                        ->preload()
-                        ->live()
-                        ->reactive()
-                        ->required(),
+                    Group::make()->schema([
+                        TextInput::make('price')
+                            ->label('Harga')
+                            ->prefix('Rp.')
+                            ->numeric()
+                            ->required(),
+                        Select::make('author')
+                            ->label('Author')
+                            ->options(User::all()->pluck('name', 'id'))
+                            ->preload()
+                            ->live()
+                            ->reactive()
+                            ->required(),
+                    ])->columns(2),
 
                     FileUpload::make('image_name')
                         ->multiple()
                         ->maxFiles(8)
                         ->minFiles(5)
                         ->label('Upload File JPG, JPEG, PNG, (Maksimal 8 Item)')
-                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg'])
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/webp'])
+                        ->maxSize(1024)
                         ->required()
                         ->previewable(),
 
@@ -128,9 +133,10 @@ class TravelPackageResource extends Resource
                             FileUpload::make('thumb_img')
                                 ->maxFiles(1)
                                 ->label('Thumbnail Video (JPG, JPEG, PNG)')
-                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg'])
+                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/jpg', 'image/webp'])
                                 ->previewable()
                                 ->live()
+                                ->maxSize(1024)
                                 ->reactive(),
                         ]),
                 ])->columns(1),
@@ -142,7 +148,6 @@ class TravelPackageResource extends Resource
                             TextInput::make('title')
                                 ->label('Title')
                                 ->required(),
-
                             RichEditor::make('general_info')
                                 ->label('Informasi Umum')
                                 ->required()
@@ -192,6 +197,8 @@ class TravelPackageResource extends Resource
             ->columns([
                 TextColumn::make('countries')
                     ->label('Negara')
+                    ->searchable()
+                    ->sortable()
                     ->formatStateUsing(function ($state) {
                         // Pisahkan kode iso2 menjadi array
                         $iso2Codes = explode(', ', $state);
@@ -202,10 +209,15 @@ class TravelPackageResource extends Resource
                         // Gabungkan nama negara menjadi string dengan pemisah koma
                         $countryNames = $countries->values()->implode(', ');
 
-                        return $countryNames;
+                        // Batasi jumlah kata yang ditampilkan, misal maksimal 3 kata
+                        $limitedCityNames = Str::words($countryNames, 3, '...');
+
+                        return $limitedCityNames;
                     }),
                 TextColumn::make('cities')
                     ->label('Kota')
+                    ->searchable()
+                    ->sortable()
                     ->formatStateUsing(function ($state) {
                         // Pisahkan kode iso2 menjadi array
                         $idCodes = explode(', ', $state);
@@ -216,7 +228,10 @@ class TravelPackageResource extends Resource
                         // Gabungkan nama negara menjadi string dengan pemisah koma
                         $countryNames = $countries->values()->implode(', ');
 
-                        return $countryNames;
+                        // Batasi jumlah kata yang ditampilkan, misal maksimal 3 kata
+                        $limitedCityNames = Str::words($countryNames, 3, '...');
+
+                        return $limitedCityNames;
                     }),
                 // TextColumn::make('title')
                 //     ->label('Judul'),
@@ -229,7 +244,12 @@ class TravelPackageResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
+                ActionGroup::make([
+                    ViewAction::make(),
+                    EditAction::make(),
+                    DeleteAction::make(),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
