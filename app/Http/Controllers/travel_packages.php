@@ -72,7 +72,7 @@ class travel_packages extends Controller
                 ->get(['iso2', 'name']);
 
             // Tambahkan iso2 dan name ke dalam item data
-            $item->iso2 = $countries->pluck('iso2')->map(fn ($iso2) => strtolower($iso2))->toArray();
+            $item->iso2 = $countries->pluck('iso2')->map(fn($iso2) => strtolower($iso2))->toArray();
             $item->country_names = $countries->pluck('name')->toArray();
 
             // Dekode JSON dan ambil nilai phone dari custom_fields
@@ -113,6 +113,51 @@ class travel_packages extends Controller
         $documents = Document::all();
 
         return response()->json($documents);
+    }
+
+    public function recomendation()
+    {
+        // Mengambil data dari TravelPackage dan melakukan inner join dengan tabel users
+        $data = TravelPackage::select('travel_packages.*', 'users.custom_fields as author_phone')
+            ->where('travel_packages.status', '<>', 0)
+            ->whereNotNull('travel_packages.recomendation')
+            ->join('users', 'travel_packages.author', '=', 'users.id')
+            ->get();
+
+        // Ubah iso2 menjadi nama negara
+        $data->each(function ($package) {
+            $package->countries = collect($package->countries)->map(function ($iso2) {
+                return countries::where('iso2', $iso2)->value('name');
+            })->toArray();
+
+            $package->cities = collect($package->cities)->map(function ($id) {
+                return cities::where('id', $id)->value('name');
+            })->toArray();
+
+            // Format harga
+            $package->price = number_format($package->price, 0, ',', '.');
+
+            // Dekode JSON dan ambil nilai phone
+            $customFields = json_decode($package->author_phone, true);
+
+            $phone = $customFields['phone'] ?? null;
+
+            // Tambahkan URL WhatsApp di depan nilai phone
+            $package->author_phone = $phone ? 'https://api.whatsapp.com/send?phone=' . $phone : null;
+
+            //  Mengubah thumb_img menjadi URL lengkap
+            $package->thumb_img = $package->thumb_img ? asset('storage/' . $package->thumb_img) : null;
+
+            // Mengubah setiap image_name menjadi URL lengkap
+            $package->image_name = collect($package->image_name)->map(function ($image) {
+                return asset('storage/' . $image);
+            })->toArray();
+
+            // Menyembunyikan field yang tidak diinginkan
+            $package->makeHidden(['deleted_at', 'created_at', 'updated_at', 'author', 'status']);
+        });
+
+        return response()->json($data);
     }
 
     /**

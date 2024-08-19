@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
 use Filament\Tables;
 use App\Models\cities;
 use Filament\Forms\Get;
@@ -23,7 +22,6 @@ use Filament\Forms\Components\RichEditor;
 use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\ToggleButtons;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\ToggleColumn;
@@ -79,11 +77,11 @@ class TravelPackageResource extends Resource
                             ->numeric()
                             ->required(),
                         TextInput::make('duration')
-                            ->label('Duration (Days)')
+                            ->label('Duration (Day)')
                             ->numeric()
                             ->required(),
                         TextInput::make('duration_night')
-                            ->label('Duration (Nights)')
+                            ->label('Duration (Night)')
                             ->numeric()
                             ->required(),
                     ])->columns(3),
@@ -195,6 +193,14 @@ class TravelPackageResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('title')
+                    ->label('Judul')
+                    ->sortable()
+                    ->searchable()
+                    ->formatStateUsing(function ($state) {
+                        // Batasi teks menjadi maksimal 25 karakter, tambahkan "..." jika dipotong
+                        return Str::limit($state, 25, '...');
+                    }),
                 TextColumn::make('countries')
                     ->label('Negara')
                     ->searchable()
@@ -210,7 +216,7 @@ class TravelPackageResource extends Resource
                         $countryNames = $countries->values()->implode(', ');
 
                         // Batasi jumlah kata yang ditampilkan, misal maksimal 3 kata
-                        $limitedCityNames = Str::words($countryNames, 3, '...');
+                        $limitedCityNames = Str::words($countryNames, 2, '...');
 
                         return $limitedCityNames;
                     }),
@@ -236,8 +242,14 @@ class TravelPackageResource extends Resource
                 // TextColumn::make('title')
                 //     ->label('Judul'),
                 ImageColumn::make('image_name')
-                    ->label('Foto Produk'),
-                ToggleColumn::make('status')
+                    ->label('Foto Produk')
+                    ->limit(3)
+                    ->limitedRemainingText()
+                    ->circular()
+                    ->stacked(),
+                ToggleColumn::make('status'),
+                ToggleColumn::make('recomendation')
+                    ->label('Rekomendasi')
 
             ])
             ->filters([
