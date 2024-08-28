@@ -220,25 +220,25 @@ class TravelPackageResource extends Resource
 
                         return $limitedCityNames;
                     }),
-                TextColumn::make('cities')
-                    ->label('Kota')
-                    ->searchable()
-                    ->sortable()
-                    ->formatStateUsing(function ($state) {
-                        // Pisahkan kode iso2 menjadi array
-                        $idCodes = explode(', ', $state);
+                // TextColumn::make('cities')
+                //     ->label('Kota')
+                //     ->searchable()
+                //     ->sortable()
+                //     ->formatStateUsing(function ($state) {
+                //         // Pisahkan kode iso2 menjadi array
+                //         $idCodes = explode(', ', $state);
 
-                        // Dapatkan nama negara berdasarkan kode iso2
-                        $countries = cities::whereIn('id', $idCodes)->pluck('name', 'id');
+                //         // Dapatkan nama negara berdasarkan kode iso2
+                //         $countries = cities::whereIn('id', $idCodes)->pluck('name', 'id');
 
-                        // Gabungkan nama negara menjadi string dengan pemisah koma
-                        $countryNames = $countries->values()->implode(', ');
+                //         // Gabungkan nama negara menjadi string dengan pemisah koma
+                //         $countryNames = $countries->values()->implode(', ');
 
-                        // Batasi jumlah kata yang ditampilkan, misal maksimal 3 kata
-                        $limitedCityNames = Str::words($countryNames, 3, '...');
+                //         // Batasi jumlah kata yang ditampilkan, misal maksimal 3 kata
+                //         $limitedCityNames = Str::words($countryNames, 3, '...');
 
-                        return $limitedCityNames;
-                    }),
+                //         return $limitedCityNames;
+                //     }),
                 // TextColumn::make('title')
                 //     ->label('Judul'),
                 ImageColumn::make('image_name')
